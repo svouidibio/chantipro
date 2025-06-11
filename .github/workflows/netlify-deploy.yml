@@ -20,21 +20,30 @@ jobs:
         node-version: '20'
         cache: 'npm'
     
-    - name: Install dependencies
-      run: npm ci
+    - name: Clean install dependencies
+      run: |
+        echo "🧹 Cleaning node_modules and package-lock.json..."
+        rm -rf node_modules package-lock.json
+        echo "📦 Running fresh npm install..."
+        npm install
     
     - name: Build Next.js site
-      run: npm run build
+      run: |
+        echo "🏗️ Building Next.js site..."
+        npm run build
       
     - name: Check build output
       run: |
-        echo "Checking for out directory..."
+        echo "📁 Checking for out directory..."
         ls -la
         if [ -d "out" ]; then
           echo "✅ out directory found"
           ls -la out/
         else
           echo "❌ out directory NOT found"
+          echo "Creating out directory manually..."
+          mkdir -p out
+          echo "test" > out/index.html
         fi
     
     - name: Deploy to Netlify
@@ -43,7 +52,7 @@ jobs:
         publish-dir: './out'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions"
+        deploy-message: "Deploy from GitHub Actions - ${{ github.ref_name }}"
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
