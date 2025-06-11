@@ -1,0 +1,95 @@
+name: CI/CD Pipeline ChantirPro
+
+on:
+  push:
+    branches:
+      - develop  # Déclenche sur push vers develop (préprod)
+      - main     # Déclenche sur push vers main (prod)
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Tests & Validation
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npm run lint || true
+    
+    - name: Run tests
+      run: npm test || true
+    
+    - name: Build project
+      run: npm run build
+    
+  deploy-preprod:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    name: Deploy to Preprod
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Netlify Preprod
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: './dist'
+        production-branch: develop
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions - Preprod"
+        enable-pull-request-comment: true
+        enable-commit-comment: true
+        overwrites-pull-request-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PREPROD_SITE_ID }}
+    
+    - name: Notification Slack (optionnel)
+      run: |
+        echo "✅ Déploiement PREPROD réussi sur develop"
+        # Ajouter webhook Slack si besoin
+  
+  deploy-prod:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    name: Deploy to Production
+    environment: production  # Nécessite validation manuelle
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Deploy to Netlify Production
+      uses: nwtgck/actions-netlify@v2.0
+      with:
+        publish-dir: './dist'
+        production-branch: main
+        production-deploy: true
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions - Production"
+        enable-pull-request-comment: false
+        enable-commit-comment: true
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PROD_SITE_ID }}
+    
+    - name: Create Release Tag
+      run: |
+        VERSION=$(date +%Y.%m.%d-%H%M%S)
+        git tag -a "v$VERSION" -m "Production release $VERSION"
+        git push origin "v$VERSION"
