@@ -1,0 +1,40 @@
+[[redirects]]
+  from = "/api/*"
+  to = "https://api.chantipro.fr/:splat"
+  status = 200
+  force = true
+  [redirects.headers]
+    X-From = "Netlify"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[plugins]]
+  package = "@netlify/plugin-lighthouse"
+  [plugins.inputs]
+    output_path = "lighthouse.html"
+
+# Configuration spécifique par branche
+[context.production]
+  command = "npm run build:prod"
+  environment = { NODE_ENV = "production" }
+
+[context.develop]
+  command = "npm run build:dev"
+  environment = { NODE_ENV = "development" }
+
+[context.deploy-preview]
+  command = "npm run build:preview"
