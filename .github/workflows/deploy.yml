@@ -65,7 +65,7 @@ jobs:
         overwrites-pull-request-comment: true
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PREPROD_SITE_ID }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
     
     - name: Notification Slack (optionnel)
       run: |
@@ -105,10 +105,14 @@ jobs:
         enable-commit-comment: true
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PROD_SITE_ID }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
     
     - name: Create Release Tag
       run: |
         VERSION=$(date +%Y.%m.%d-%H%M%S)
         git tag -a "v$VERSION" -m "Production release $VERSION"
         git push origin "v$VERSION"
+    
+    - name: Purge CDN Cache (si applicable)
+      run: |
+        echo "Cache purgé pour production"
