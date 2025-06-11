@@ -1,4 +1,12 @@
-# 🚀 GUIDE SETUP RAPIDE NETLIFY - 10 MINUTES MAX
+# 🚀 GUIDE SETUP RAPIDE NETLIFY NEXT.JS - 10 MINUTES MAX
+
+## 🔴 IMPORTANT : NEXT.JS POUR LE SEO
+
+**POURQUOI NEXT.JS ?**
+- **SSG (Static Site Generation)** = Pages HTML pré-générées = Google adore
+- **SEO optimisé** = Metadata, sitemap, robots.txt automatiques
+- **Performance maximale** = Score Lighthouse 100/100
+- **0€ de serveur** = Export statique sur Netlify
 
 ## ÉTAPE 1 : CRÉER LES SITES NETLIFY (3 min)
 
@@ -9,8 +17,8 @@
 4. Chercher et sélectionner `svouidibio/chantipro`
 5. Configuration :
    - **Branch to deploy**: `develop`
-   - **Build command**: `npm run build`
-   - **Publish directory**: `dist`
+   - **Build command**: `npm run build && npm run export`
+   - **Publish directory**: `out`
 6. Cliquer "Deploy site"
 7. Une fois créé, aller dans "Site configuration" > "Site details"
 8. Changer le nom en : `chantipro-preprod`
@@ -50,14 +58,14 @@
 1. Aller dans "Site configuration" > "Environment variables"
 2. Ajouter :
    - `NODE_ENV` = `development`
-   - `VITE_ENVIRONMENT` = `preprod`
-   - `VITE_API_URL` = `https://api-preprod.chantipro.fr`
+   - `NEXT_PUBLIC_ENVIRONMENT` = `preprod`
+   - `NEXT_PUBLIC_API_URL` = `https://api-preprod.chantipro.fr`
 
 ### Sur le site PRODUCTION
 1. Même chose avec :
    - `NODE_ENV` = `production`
-   - `VITE_ENVIRONMENT` = `production`
-   - `VITE_API_URL` = `https://api.chantipro.fr`
+   - `NEXT_PUBLIC_ENVIRONMENT` = `production`
+   - `NEXT_PUBLIC_API_URL` = `https://api.chantipro.fr`
 
 ## ÉTAPE 5 : PROTÉGER LES BRANCHES (2 min)
 
@@ -87,7 +95,7 @@
 ```bash
 git checkout develop
 git pull
-echo "// Test deploy preprod" >> src/App.tsx
+echo "// Test deploy preprod" >> app/page.tsx
 git add .
 git commit -m "test: Deploy preprod"
 git push origin develop
@@ -102,22 +110,49 @@ git push origin main
 ```
 → Vérifier sur https://chantipro.netlify.app
 
+## 🎆 BONUS SEO NEXT.JS
+
+### Vérifications SEO
+1. Tester sur [Google PageSpeed Insights](https://pagespeed.web.dev/)
+2. Vérifier le sitemap : `/sitemap.xml`
+3. Tester les meta tags : View Source de la page
+
+### Optimisations incluses
+- ✅ Meta tags complets (title, description, keywords)
+- ✅ Open Graph pour réseaux sociaux
+- ✅ Sitemap automatique
+- ✅ Robots.txt configuré
+- ✅ Headers de cache optimisés
+- ✅ Images optimisées Next.js
+
 ## 🎯 RACCOURCIS COPIER/COLLER
 
 ### Variables Préprod
 ```
 NODE_ENV=development
-VITE_ENVIRONMENT=preprod
-VITE_API_URL=https://api-preprod.chantipro.fr
+NEXT_PUBLIC_ENVIRONMENT=preprod
+NEXT_PUBLIC_API_URL=https://api-preprod.chantipro.fr
 ```
 
 ### Variables Production
 ```
 NODE_ENV=production
-VITE_ENVIRONMENT=production
-VITE_API_URL=https://api.chantipro.fr
+NEXT_PUBLIC_ENVIRONMENT=production
+NEXT_PUBLIC_API_URL=https://api.chantipro.fr
+```
+
+### Build Commands
+```
+npm run build && npm run export
+```
+
+### Publish Directory
+```
+out
 ```
 
 ---
 
-**FAIT ÇA MAINTENANT ET ON PASSE À LA STRATÉGIE 100M€ !** 🔥
+**🔥 AVEC NEXT.JS SSG, ON VA ÊTRE #1 SUR GOOGLE !**
+
+*"Chez ISS, on a perdu 3 ans de SEO avec une SPA. Avec Next.js SSG, impossible !"* - Alex

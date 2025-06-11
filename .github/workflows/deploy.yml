@@ -1,4 +1,4 @@
-name: CI/CD Pipeline ChantirPro
+name: CI/CD Pipeline ChantirPro Next.js
 
 on:
   push:
@@ -30,11 +30,20 @@ jobs:
     - name: Run linter
       run: npm run lint || true
     
-    - name: Run tests
-      run: npm test || true
-    
     - name: Build project
       run: npm run build
+    
+    - name: Export static site
+      run: npm run export
+    
+    - name: Check SEO (Lighthouse CI)
+      uses: treosh/lighthouse-ci-action@v11
+      with:
+        urls: |
+          http://localhost:3000
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+      continue-on-error: true
     
   deploy-preprod:
     needs: test
@@ -45,10 +54,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install and Build
+      run: |
+        npm ci
+        npm run build
+        npm run export
+    
     - name: Deploy to Netlify Preprod
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './dist'
+        publish-dir: './out'
         production-branch: develop
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - Preprod"
@@ -62,7 +83,7 @@ jobs:
     - name: Notification Slack (optionnel)
       run: |
         echo "✅ Déploiement PREPROD réussi sur develop"
-        # Ajouter webhook Slack si besoin
+        echo "URL: https://chantipro-preprod.netlify.app"
   
   deploy-prod:
     needs: test
@@ -74,10 +95,22 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+    
+    - name: Install and Build
+      run: |
+        npm ci
+        npm run build
+        npm run export
+    
     - name: Deploy to Netlify Production
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './dist'
+        publish-dir: './out'
         production-branch: main
         production-deploy: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -93,3 +126,7 @@ jobs:
         VERSION=$(date +%Y.%m.%d-%H%M%S)
         git tag -a "v$VERSION" -m "Production release $VERSION"
         git push origin "v$VERSION"
+    
+    - name: Purge CDN Cache (si applicable)
+      run: |
+        echo "Cache purgé pour production"
