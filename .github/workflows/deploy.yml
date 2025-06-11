@@ -25,7 +25,7 @@ jobs:
         cache: 'npm'
     
     - name: Install dependencies
-      run: npm ci
+      run: npm install
     
     - name: Run linter
       run: npm run lint || true
@@ -62,7 +62,7 @@ jobs:
     
     - name: Install and Build
       run: |
-        npm ci
+        npm install
         npm run build
         npm run export
     
@@ -103,7 +103,7 @@ jobs:
     
     - name: Install and Build
       run: |
-        npm ci
+        npm install
         npm run build
         npm run export
     
