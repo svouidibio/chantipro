@@ -1,5 +1,5 @@
 [build]
-  command = "npm run build && npm run export"
+  command = "npm run build"
   publish = "out"
 
 [build.environment]
@@ -33,13 +33,13 @@
 
 # Configuration par branche
 [context.production]
-  command = "npm run build && npm run export"
+  command = "npm run build"
   environment = { NODE_ENV = "production", NEXT_PUBLIC_ENVIRONMENT = "production" }
 
 [context.develop]
-  command = "npm run build && npm run export"
+  command = "npm run build"
   environment = { NODE_ENV = "development", NEXT_PUBLIC_ENVIRONMENT = "preprod" }
 
 [context.deploy-preview]
-  command = "npm run build && npm run export"
+  command = "npm run build"
   environment = { NEXT_PUBLIC_ENVIRONMENT = "preview" }
