@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 
 export default function Home() {
   const [environment, setEnvironment] = useState('')
+  const [deployTime] = useState(new Date().toLocaleString('fr-FR'))
   
   useEffect(() => {
     setEnvironment(process.env.NEXT_PUBLIC_ENVIRONMENT || 'development')
@@ -22,18 +23,29 @@ export default function Home() {
           <p className="text-lg text-gray-500">
             Expert BTP - Intervention rapide - Devis gratuit
           </p>
-          <div className="mt-4">
+          <div className="mt-4 space-y-2">
             <span className={`inline-block px-4 py-2 rounded-full text-sm font-semibold ${
               environment === 'production' 
                 ? 'bg-green-100 text-green-800' 
-                : 'bg-yellow-100 text-yellow-800'
+                : environment === 'preprod'
+                ? 'bg-yellow-100 text-yellow-800'
+                : 'bg-blue-100 text-blue-800'
             }`}>
               Environnement: {environment.toUpperCase()}
             </span>
+            <p className="text-sm text-gray-500">
+              Déployé le: {deployTime}
+            </p>
           </div>
         </header>
         
         <section className="max-w-4xl mx-auto">
+          {/* Bannière Test Déploiement */}
+          <div className="bg-green-50 border-2 border-green-300 rounded-lg p-4 mb-8 text-center">
+            <p className="text-green-800 font-bold">✅ DÉPLOIEMENT PRÉPROD RÉUSSI !</p>
+            <p className="text-green-600 text-sm mt-1">Test effectué par Alex "The Cleaner" Rodriguez</p>
+          </div>
+
           <div className="bg-white rounded-lg shadow-xl p-8 mb-8">
             <h2 className="text-3xl font-bold mb-6">🚀 Objectif 100M€</h2>
             <p className="text-gray-700 mb-4">
