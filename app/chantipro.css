@@ -78,12 +78,7 @@ body {
   font-size: 1.2rem;
 }
 
-/* Animation des sections */
-section {
-  animation: fadeInUp 0.8s ease-out forwards;
-}
-
-/* Animation float */
+/* Animation float pour les éléments spécifiques */
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
