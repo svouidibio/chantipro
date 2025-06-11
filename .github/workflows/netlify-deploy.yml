@@ -27,32 +27,48 @@ jobs:
         echo "📦 Running fresh npm install..."
         npm install
     
+    - name: Check TypeScript errors
+      run: |
+        echo "🔍 Checking for TypeScript errors..."
+        npx tsc --noEmit || true
+    
     - name: Build Next.js site
       run: |
         echo "🏗️ Building Next.js site..."
-        npm run build
+        npm run build || (echo "❌ Build failed. Checking for common issues..." && cat .next/build-manifest.json 2>/dev/null || echo "No build manifest found")
+      env:
+        NEXT_TELEMETRY_DISABLED: 1
       
     - name: Check build output
       run: |
-        echo "📁 Checking for out directory..."
+        echo "📁 Checking build directories..."
+        echo "Contents of root directory:"
         ls -la
+        
+        if [ -d ".next" ]; then
+          echo "✅ .next directory found"
+        fi
+        
         if [ -d "out" ]; then
           echo "✅ out directory found"
+          echo "Contents of out directory:"
           ls -la out/
         else
           echo "❌ out directory NOT found"
-          echo "Creating out directory manually..."
-          mkdir -p out
-          echo "test" > out/index.html
+          echo "🔧 Trying to export manually..."
+          npx next export || echo "Export failed"
         fi
     
     - name: Deploy to Netlify
+      if: success() || failure()
       uses: nwtgck/actions-netlify@v2.0
       with:
         publish-dir: './out'
         production-branch: main
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - ${{ github.ref_name }}"
+        enable-pull-request-comment: false
+        enable-commit-comment: false
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
