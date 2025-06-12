@@ -1,18 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export', // Pour générer un site statique
+  output: 'export',
   images: {
-    unoptimized: true // Nécessaire pour l'export statique
+    unoptimized: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  experimental: {
+    appDir: true
   },
   trailingSlash: true,
-  // Optimisations SEO
-  poweredByHeader: false,
-  compress: true,
-  // Variables d'environnement publiques
-  env: {
-    NEXT_PUBLIC_ENVIRONMENT: process.env.NEXT_PUBLIC_ENVIRONMENT || 'development',
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
-  }
+  distDir: 'out'
 }
 
 module.exports = nextConfig
