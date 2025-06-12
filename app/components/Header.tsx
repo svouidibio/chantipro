@@ -1,24 +1,8 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 export default function Header() {
-  const [scrolled, setScrolled] = useState(false)
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   return (
-    <header className={`fixed w-full top-0 z-50 bg-white transition-all duration-300 ${
-      scrolled ? 'py-2 shadow-lg' : 'py-4 shadow-md'
-    }`}>
+    <header className="fixed w-full top-0 z-50 bg-white py-4 shadow-md">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-gray-900">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-cyan-400 rounded-lg flex items-center justify-center text-white font-bold">
