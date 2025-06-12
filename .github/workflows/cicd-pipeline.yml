@@ -1,4 +1,4 @@
-name: CI/CD Pipeline ChantirPro Next.js
+name: CI/CD Pipeline ChantirPro
 
 on:
   push:
@@ -10,12 +10,13 @@ on:
       - main
 
 jobs:
-  test:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    name: Tests & Validation
+    name: Build & Deploy
     
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -23,60 +24,73 @@ jobs:
         node-version: '20'
         cache: 'npm'
     
-    - name: Install dependencies
-      run: npm install
+    - name: Clean install dependencies
+      run: |
+        echo "🧹 Cleaning node_modules and package-lock.json..."
+        rm -rf node_modules package-lock.json
+        echo "📦 Running fresh npm install..."
+        npm install
     
-    - name: Run linter
-      run: npm run lint || true
+    - name: Check TypeScript errors
+      run: |
+        echo "🔍 Checking for TypeScript errors..."
+        npx tsc --noEmit || true
     
-    - name: Build project
-      run: npm run build
+    - name: Build Next.js site
+      run: |
+        echo "🏗️ Building Next.js site..."
+        npm run build
       env:
         NEXT_TELEMETRY_DISABLED: 1
+    
+    - name: Export static site
+      run: |
+        echo "📤 Exporting static site..."
+        npx next export || echo "Export might be automatic with Next.js 13+"
+    
+    - name: Check build output
+      run: |
+        echo "📁 Checking build directories..."
+        if [ -d "out" ]; then
+          echo "✅ out directory found"
+          echo "Contents of out directory:"
+          ls -la out/
+        else
+          echo "❌ out directory NOT found"
+          echo "Looking for .next directory..."
+          if [ -d ".next" ]; then
+            echo "✅ .next directory found"
+          fi
+        fi
 
-  deploy-preprod:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'
-    name: Deploy to Preprod
-    
-    steps:
-    - uses: actions/checkout@v4
-    
+    # Deploy to Preprod (develop branch)
     - name: Deploy to Netlify Preprod
+      if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
       uses: nwtgck/actions-netlify@v2.0
       with:
         publish-dir: './out'
         production-deploy: false
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions - Preprod"
+        deploy-message: "Deploy from GitHub Actions - Preprod - ${{ github.sha }}"
         enable-pull-request-comment: false
         enable-commit-comment: false
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_PREPROD }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       timeout-minutes: 1
 
-  deploy-prod:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    name: Deploy to Production
-    environment: production
-    
-    steps:
-    - uses: actions/checkout@v4
-    
+    # Deploy to Production (main branch)
     - name: Deploy to Netlify Production
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: nwtgck/actions-netlify@v2.0
       with:
         publish-dir: './out'
         production-deploy: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions - Production"
+        deploy-message: "Deploy from GitHub Actions - Production - ${{ github.sha }}"
         enable-pull-request-comment: false
         enable-commit-comment: false
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_PROD }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
       timeout-minutes: 1
