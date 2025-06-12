@@ -39,6 +39,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://chantipro.fr',
   },
+  icons: {
+    icon: '/favicon.ico',
+  },
+  viewport: 'width=device-width, initial-scale=1',
 }
 
 export default function RootLayout({
@@ -48,10 +52,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <head>
-        <link rel="icon" href="/favicon.ico" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </head>
       <body className={inter.className}>{children}</body>
     </html>
   )
