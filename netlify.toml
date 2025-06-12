@@ -3,18 +3,14 @@
   publish = "out"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "18"
 
-[[plugins]]
-  package = "@netlify/plugin-nextjs"
-
-# Headers de sécurité et performance
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
     Cache-Control = "public, max-age=31536000, immutable"
@@ -24,22 +20,8 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Redirections
 [[redirects]]
   from = "/api/*"
   to = "https://api.chantipro.fr/:splat"
   status = 200
   force = true
-
-# Configuration par branche
-[context.production]
-  command = "npm run build"
-  environment = { NODE_ENV = "production", NEXT_PUBLIC_ENVIRONMENT = "production" }
-
-[context.develop]
-  command = "npm run build"
-  environment = { NODE_ENV = "development", NEXT_PUBLIC_ENVIRONMENT = "preprod" }
-
-[context.deploy-preview]
-  command = "npm run build"
-  environment = { NEXT_PUBLIC_ENVIRONMENT = "preview" }
