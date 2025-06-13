@@ -1,0 +1,2 @@
+# Force rebuild - src folder removed
+REBUILD_TRIGGER=1

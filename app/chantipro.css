@@ -1,0 +1,116 @@
+/* Variables CSS globales */
+:root {
+  --primary: #0066FF;
+  --primary-dark: #0052CC;
+  --secondary: #1a1f36;
+  --accent: #00D4FF;
+  --success: #00C896;
+  --warning: #FFB800;
+  --text: #4a5568;
+  --text-light: #718096;
+  --bg-light: #f7fafc;
+  --white: #ffffff;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --shadow-lg: rgba(0, 0, 0, 0.15);
+}
+
+/* Reset CSS simplifié - ÉVITER LES PROBLÈMES DE VISIBILITÉ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* CRITICAL: Assurer la visibilité du contenu */
+html, body {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.6;
+  color: var(--text);
+  overflow-x: hidden;
+}
+
+/* Animations simplifiées et sécurisées */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0.8;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-10px); 
+  }
+}
+
+/* Classes personnalisées */
+.hero-title span {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block; /* Important pour le gradient */
+}
+
+.stat-number {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block; /* Important pour le gradient */
+}
+
+.service-features {
+  list-style: none;
+}
+
+.service-features li {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.service-features li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* Animation float pour les éléments spécifiques */
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Sécurité supplémentaire pour éviter la disparition du contenu */
+section, div, p, h1, h2, h3, h4, h5, h6, span, a, button {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Optimisation performance */
+.hero {
+  will-change: transform;
+}
+
+/* Amélioration contraste pour meilleure lisibilité */
+.text-gray-600 {
+  color: #4a5568;
+}
+
+.text-gray-700 {
+  color: #2d3748;
+}

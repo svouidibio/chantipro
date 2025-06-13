@@ -1,0 +1,4 @@
+BUILD FORCE: 2025-06-13T17:15:00Z
+Nettoyage des erreurs de build Next.js
+- Correction problème Html import
+- Correction problème useContext

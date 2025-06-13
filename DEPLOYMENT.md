@@ -1,263 +1,143 @@
-# Guide de Déploiement ChantirPro
+# ChantirPro - Workflow de Déploiement Pro 🚀
 
-## 🚀 Déploiement Automatique
+## Architecture Git & Déploiement
 
-Le site se déploie automatiquement sur Netlify à chaque push sur la branche `main`.
+### Branches
+- **`main`** : PRODUCTION (protection activée)
+- **`develop`** : PRÉPROD (auto-deploy sur Netlify)
+- **`feature/*`** : Développements isolés
 
-## 📋 Prérequis
+### Workflow de Développement
 
-### 1. Variables d'environnement
+1. **Développement Local**
+   ```bash
+   git checkout develop
+   git pull origin develop
+   git checkout -b feature/ma-nouvelle-fonctionnalite
+   # Développer...
+   git add .
+   git commit -m "feat: description claire"
+   git push origin feature/ma-nouvelle-fonctionnalite
+   ```
 
-Configurer les variables suivantes dans Netlify :
+2. **Test en Préprod**
+   - Créer une Pull Request vers `develop`
+   - Tests automatiques lancés
+   - Merge = déploiement auto sur préprod
+   - URL préprod : `https://chantipro-preprod.netlify.app`
 
-```env
-# Supabase (obligatoire)
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+3. **Mise en Production**
+   ```bash
+   git checkout main
+   git pull origin main
+   git merge develop
+   git push origin main
+   ```
+   - Validation manuelle requise (environment protection)
+   - URL prod : `https://chantipro.netlify.app`
 
-# Email (optionnel)
-RESEND_API_KEY=re_your_api_key
-CONTACT_EMAIL=contact@chantipro.fr
+## Configuration Netlify
 
-# Analytics (optionnel)
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX
+### 1. Créer 2 sites Netlify
 
-# Business
-NEXT_PUBLIC_BUSINESS_PHONE=+33123456789
-NEXT_PUBLIC_BUSINESS_EMAIL=contact@chantipro.fr
+#### Site PRÉPROD
+1. Aller sur [app.netlify.com](https://app.netlify.com)
+2. "Add new site" > "Import an existing project"
+3. Connecter GitHub > Sélectionner `svouidibio/chantipro`
+4. Configuration :
+   - Branch to deploy : `develop`
+   - Build command : `npm run build`
+   - Publish directory : `dist`
+5. Renommer le site : `chantipro-preprod`
+
+#### Site PRODUCTION
+1. Répéter les étapes ci-dessus
+2. Configuration :
+   - Branch to deploy : `main`
+   - Build command : `npm run build`
+   - Publish directory : `dist`
+3. Renommer le site : `chantipro`
+
+### 2. Variables d'Environnement
+
+#### GitHub Secrets (Settings > Secrets > Actions)
+- `NETLIFY_AUTH_TOKEN` : Token personnel Netlify
+- `NETLIFY_PREPROD_SITE_ID` : ID du site préprod
+- `NETLIFY_PROD_SITE_ID` : ID du site production
+
+#### Variables Netlify (par site)
+**Préprod** :
+```
+NODE_ENV=development
+VITE_API_URL=https://api-preprod.chantipro.fr
+VITE_ENVIRONMENT=preprod
 ```
 
-### 2. Configuration Netlify
+**Production** :
+```
+NODE_ENV=production
+VITE_API_URL=https://api.chantipro.fr
+VITE_ENVIRONMENT=production
+```
 
-Le fichier `netlify.toml` configure automatiquement :
-- Build commands
-- Redirections SPA
-- Headers de sécurité
-- Cache statique
-- Functions serverless
+## Protection des Branches
 
-## 🔧 Déploiement Manuel
+### Branch `main` (Production)
+1. Settings > Branches > Add rule
+2. Branch name pattern : `main`
+3. Cocher :
+   - ✅ Require pull request reviews before merging
+   - ✅ Require status checks to pass before merging
+   - ✅ Require branches to be up to date before merging
+   - ✅ Include administrators
 
-### Depuis la ligne de commande
+### Branch `develop` (Préprod)
+1. Settings > Branches > Add rule
+2. Branch name pattern : `develop`
+3. Cocher :
+   - ✅ Require status checks to pass before merging
+
+## Commandes Utiles
 
 ```bash
-# 1. Build du projet
-npm run build
+# Voir l'état des branches
+git branch -a
 
-# 2. Test local du build
-npm run preview
+# Synchroniser develop avec main
+git checkout develop
+git merge main
+git push origin develop
 
-# 3. Déploiement Netlify CLI
-npx netlify deploy --prod --dir=out
+# Hotfix production
+git checkout -b hotfix/correction-urgente main
+# Corriger...
+git push origin hotfix/correction-urgente
+# PR vers main ET develop
+
+# Nettoyer les branches locales
+git branch -d feature/ancienne-feature
+git remote prune origin
 ```
 
-### Via GitHub Actions (optionnel)
+## Monitoring & Alertes
 
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Netlify
+### Netlify
+- Analytics activées sur les 2 sites
+- Notifications email pour échecs de build
+- Webhook Slack (optionnel)
 
-on:
-  push:
-    branches: [ main ]
+### GitHub Actions
+- Status checks obligatoires
+- Notifications sur PR
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Build
-        run: npm run build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      
-      - name: Deploy to Netlify
-        uses: nwtgck/actions-netlify@v1.2
-        with:
-          publish-dir: './out'
-          production-branch: main
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-```
+## Best Practices Alex Rodriguez 💪
 
-## 🗄️ Configuration Supabase
-
-### 1. Créer le projet Supabase
-
-```bash
-# Installer Supabase CLI
-npm install -g supabase
-
-# Login
-supabase login
-
-# Créer nouveau projet
-supabase projects create chantipro
-
-# Initialiser localement
-supabase init
-```
-
-### 2. Schéma de base de données
-
-```sql
--- Tables principales
-CREATE TABLE contact_forms (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  phone TEXT,
-  company TEXT,
-  message TEXT NOT NULL,
-  service_type TEXT,
-  project_surface INTEGER,
-  urgent BOOLEAN DEFAULT false,
-  status TEXT DEFAULT 'nouveau',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-CREATE TABLE quote_requests (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  contact_form_id UUID REFERENCES contact_forms(id),
-  surface INTEGER NOT NULL,
-  service_type TEXT NOT NULL,
-  location TEXT NOT NULL,
-  deadline DATE,
-  special_requirements TEXT,
-  estimated_price DECIMAL(10,2),
-  status TEXT DEFAULT 'en_attente',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-
-CREATE TABLE testimonials (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  company TEXT NOT NULL,
-  role TEXT NOT NULL,
-  content TEXT NOT NULL,
-  rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-  verified BOOLEAN DEFAULT false,
-  published BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-```
-
-### 3. Politiques RLS (Row Level Security)
-
-```sql
--- Activer RLS
-ALTER TABLE contact_forms ENABLE ROW LEVEL SECURITY;
-ALTER TABLE quote_requests ENABLE ROW LEVEL SECURITY;
-ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
-
--- Politiques publiques pour lecture
-CREATE POLICY "Allow public read testimonials" ON testimonials
-  FOR SELECT USING (published = true);
-
--- Politiques pour insertion formulaires
-CREATE POLICY "Allow insert contact forms" ON contact_forms
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Allow insert quote requests" ON quote_requests
-  FOR INSERT WITH CHECK (true);
-```
-
-## 🔒 Configuration Sécurité
-
-### Headers de sécurité (netlify.toml)
-
-- `X-Frame-Options: DENY`
-- `X-Content-Type-Options: nosniff`
-- `X-XSS-Protection: 1; mode=block`
-- `Referrer-Policy: origin-when-cross-origin`
-
-### CSP (Content Security Policy)
-
-```toml
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co;"
-```
-
-## 📊 Monitoring & Analytics
-
-### Google Analytics 4
-
-1. Créer une propriété GA4
-2. Ajouter `NEXT_PUBLIC_GA_ID` aux variables d'environnement
-3. Le tracking est automatiquement configuré
-
-### Lighthouse CI
-
-```bash
-# Installation
-npm install -g @lhci/cli
-
-# Configuration
-echo '{
-  "ci": {
-    "collect": {
-      "staticDistDir": "./out"
-    },
-    "assert": {
-      "assertions": {
-        "categories:performance": ["error", {"minScore": 0.9}],
-        "categories:accessibility": ["error", {"minScore": 0.9}],
-        "categories:best-practices": ["error", {"minScore": 0.9}],
-        "categories:seo": ["error", {"minScore": 0.9}]
-      }
-    }
-  }
-}' > lighthouserc.json
-
-# Audit
-lhci autorun
-```
-
-## 🐛 Debugging
-
-### Logs Netlify
-
-```bash
-# Voir les logs de build
-netlify logs
-
-# Logs des functions
-netlify logs --functions
-```
-
-### Erreurs communes
-
-1. **Build failed**: Vérifier les variables d'environnement
-2. **500 Internal Error**: Vérifier la configuration Supabase
-3. **404 on refresh**: Vérifier les redirections SPA
-4. **Slow loading**: Optimiser les images et chunks
-
-## ✅ Checklist de déploiement
-
-- [ ] Variables d'environnement configurées
-- [ ] Base Supabase créée et configurée
-- [ ] DNS configuré (si domaine custom)
-- [ ] HTTPS activé
-- [ ] Tests Lighthouse > 90%
-- [ ] Formulaire de contact fonctionnel
-- [ ] Analytics configuré
-- [ ] Monitoring activé
+1. **JAMAIS de push direct sur `main`**
+2. **Tester TOUT en préprod avant prod**
+3. **Commits atomiques avec messages clairs**
+4. **Review de code obligatoire pour prod**
+5. **Tags de version sur chaque release prod**
 
 ---
 
-**Support**: Pour toute aide, contacter l'équipe technique via GitHub Issues.
+*"Chez ISS, on a perdu 3M€ à cause d'un déploiement foireux. Avec ce workflow, c'est IMPOSSIBLE !"* - Alex
