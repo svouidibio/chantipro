@@ -4,7 +4,8 @@ export default function ContactForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     alert('Merci pour votre demande ! Nous vous recontactons sous 4h maximum.')
-    ;(e.target as HTMLFormElement).reset()
+    const form = e.target as HTMLFormElement
+    form.reset()
   }
 
   return (
@@ -66,7 +67,7 @@ export default function ContactForm() {
       </button>
       
       <p className="text-center mt-4 text-gray-600">
-        🔒 Vos données sont sécurisées et restent confidentielles
+        🔐 Vos données sont sécurisées et restent confidentielles
       </p>
     </form>
   )
