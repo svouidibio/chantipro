@@ -1,15 +1,19 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  // Désactiver l'export statique temporairement pour diagnostiquer
+  // output: 'export',
   images: {
     unoptimized: true
   },
-  trailingSlash: true,
+  // trailingSlash: true,
   eslint: {
     ignoreDuringBuilds: true,
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
   },
 }
 
