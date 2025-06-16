@@ -1,0 +1,124 @@
+name: Lighthouse Performance Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # Tous les jours à 6h du matin
+  push:
+    branches:
+      - main
+      - develop
+  workflow_run:
+    workflows: ["CI/CD Pipeline ChantirPro Next.js"]
+    types:
+      - completed
+
+jobs:
+  lighthouse-preprod:
+    name: Lighthouse Tests - Preprod
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Wait for deployment to be ready
+      run: sleep 60 # Attendre 1 minute que le déploiement soit propagé
+    
+    - name: Run Lighthouse CI - Preprod
+      uses: treosh/lighthouse-ci-action@v11
+      with:
+        configPath: './.lighthouserc.preprod.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+    
+    - name: Format Lighthouse Results
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const results = require('./lighthouse-results.json');
+          const summary = `
+          ## 🔍 Lighthouse Preprod Results
+          
+          | Metric | Score |
+          |--------|-------|
+          | Performance | ${results.performance}% |
+          | Accessibility | ${results.accessibility}% |
+          | Best Practices | ${results.bestPractices}% |
+          | SEO | ${results.seo}% |
+          
+          🔗 [View full report](${results.reportUrl})
+          `;
+          
+          core.summary.addRaw(summary).write();
+
+  lighthouse-prod:
+    name: Lighthouse Tests - Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Wait for deployment to be ready
+      run: sleep 90 # Attendre 1.5 minutes pour la prod
+    
+    - name: Run Lighthouse CI - Production
+      uses: treosh/lighthouse-ci-action@v11
+      with:
+        configPath: './.lighthouserc.prod.json'
+        uploadArtifacts: true
+        temporaryPublicStorage: true
+    
+    - name: Format Lighthouse Results
+      uses: actions/github-script@v7
+      if: always()
+      with:
+        script: |
+          const results = require('./lighthouse-results.json');
+          const summary = `
+          ## 🚀 Lighthouse Production Results
+          
+          | Metric | Score |
+          |--------|-------|
+          | Performance | ${results.performance}% |
+          | Accessibility | ${results.accessibility}% |
+          | Best Practices | ${results.bestPractices}% |
+          | SEO | ${results.seo}% |
+          
+          🔗 [View full report](${results.reportUrl})
+          `;
+          
+          core.summary.addRaw(summary).write();
+    
+    - name: Alert on Performance Degradation
+      if: failure()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Performance Alert: Lighthouse scores below threshold',
+            body: 'Production Lighthouse tests failed. Check the workflow run for details.',
+            labels: ['performance', 'urgent']
+          });
+
+  lighthouse-comparison:
+    name: Compare Preprod vs Production
+    runs-on: ubuntu-latest
+    needs: [lighthouse-preprod, lighthouse-prod]
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    
+    steps:
+    - name: Generate Comparison Report
+      run: |
+        echo "## 📊 Lighthouse Comparison Report"
+        echo ""
+        echo "| Environment | Performance | Accessibility | Best Practices | SEO |"
+        echo "|------------|-------------|---------------|----------------|-----|"
+        echo "| Preprod    | TBD%        | TBD%          | TBD%           | TBD% |"
+        echo "| Production | TBD%        | TBD%          | TBD%           | TBD% |"
+        echo ""
+        echo "Generated at: $(date)"
