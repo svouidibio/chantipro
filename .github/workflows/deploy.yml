@@ -68,7 +68,7 @@ jobs:
     - name: Deploy to Netlify Preprod
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './out'
+        publish-dir: '.'
         production-branch: develop
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions - Preprod"
@@ -109,7 +109,7 @@ jobs:
     - name: Deploy to Netlify Production
       uses: nwtgck/actions-netlify@v2.0
       with:
-        publish-dir: './out'
+        publish-dir: '.'
         production-branch: main
         production-deploy: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
