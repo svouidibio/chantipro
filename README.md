@@ -2,6 +2,15 @@
 
 > **Objectif : 100M€ de CA en 7 ans** avec la stratégie d'Alex "The Cleaner" Rodriguez
 
+## ⚠️ CONFIGURATION NETLIFY CRITIQUE
+
+**ATTENTION :** Si le build échoue avec une erreur sur le dossier `dist`, voir [NETLIFY_CONFIG_FIX.md](./NETLIFY_CONFIG_FIX.md)
+
+**Config correcte dans l'UI Netlify :**
+- Build command: `npm run build`
+- Publish directory: `.` (point) ou VIDE
+- NE PAS mettre `dist` ou `out`
+
 ## 🚀 Stack Technique
 
 - **Framework**: Next.js 14 (SSG pour SEO optimal)
