@@ -33,17 +33,6 @@ jobs:
     - name: Build project
       run: npm run build
     
-    # Export static site is handled by next build with output: 'export'
-    
-    - name: Check SEO (Lighthouse CI)
-      uses: treosh/lighthouse-ci-action@v11
-      with:
-        urls: |
-          http://localhost:3000
-        uploadArtifacts: true
-        temporaryPublicStorage: true
-      continue-on-error: true
-    
   deploy-preprod:
     needs: test
     runs-on: ubuntu-latest
@@ -83,6 +72,17 @@ jobs:
       run: |
         echo "✅ Déploiement PREPROD réussi sur develop"
         echo "URL: https://chantipro-preprod.netlify.app"
+    
+    - name: Trigger Lighthouse Tests
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'lighthouse.yml',
+            ref: 'develop'
+          });
   
   deploy-prod:
     needs: test
@@ -129,3 +129,14 @@ jobs:
     - name: Purge CDN Cache (si applicable)
       run: |
         echo "Cache purgé pour production"
+    
+    - name: Trigger Lighthouse Tests
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.actions.createWorkflowDispatch({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            workflow_id: 'lighthouse.yml',
+            ref: 'main'
+          });
